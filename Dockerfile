@@ -79,3 +79,7 @@ RUN cat extras_requirements.json | jq  '.[][]' | grep -v 'tensorflow' | sort -u 
 # Install requirements.txt
 COPY ./requirements.txt /opt/src/requirements.txt
 RUN pip install -r requirements.txt
+
+# Use no-deps because we don't need any of its dependencies for what we're using
+# and some of the dependencies may clash with ours.
+RUN pip install label-maker==0.4.* --no-deps
