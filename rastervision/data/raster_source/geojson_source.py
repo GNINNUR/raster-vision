@@ -49,6 +49,7 @@ class GeoJSONSource(RasterSource):
         self.rasterizer_options = rasterizer_options
         self.extent = extent
         self.crs_transformer = crs_transformer
+
         geojson = json.loads(file_to_str(self.uri))
         self.raster = geojson_to_raster(geojson, rasterizer_options, extent,
                                         crs_transformer)

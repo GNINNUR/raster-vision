@@ -6,6 +6,8 @@ from rastervision.plugin import PluginRegistry
 from rastervision.data.raster_source.default import (
     GeoTiffSourceDefaultProvider, ImageSourceDefaultProvider,
     GeoJSONSourceDefaultProvider)
+from rastervision.data.vector_source.default import (
+    GeoJSONVectorSourceDefaultProvider, MBTilesVectorSourceDefaultProvider)
 from rastervision.data.label_source.default import (
     ObjectDetectionGeoJSONSourceDefaultProvider,
     ChipClassificationGeoJSONSourceDefaultProvider,
@@ -62,6 +64,12 @@ class Registry:
             (rv.RASTER_SOURCE, rv.IMAGE_SOURCE):
             rv.data.ImageSourceConfigBuilder,
 
+            # Vector Sources
+            (rv.VECTOR_SOURCE, rv.MBTILES_SOURCE):
+            rv.data.MBTilesVectorSourceConfigBuilder,
+            (rv.VECTOR_SOURCE, rv.GEOJSON_SOURCE):
+            rv.data.GeoJSONVectorSourceConfigBuilder,
+
             # Label Sources
             (rv.LABEL_SOURCE, rv.OBJECT_DETECTION_GEOJSON):
             rv.data.ObjectDetectionGeoJSONSourceConfigBuilder,
@@ -100,6 +108,11 @@ class Registry:
             GeoJSONSourceDefaultProvider,
             # This is the catch-all case, ensure it's on the bottom of the search stack.
             ImageSourceDefaultProvider
+        ]
+
+        self._internal_default_vector_sources = [
+            GeoJSONVectorSourceDefaultProvider,
+            MBTilesVectorSourceDefaultProvider
         ]
 
         self._internal_default_label_sources = [
@@ -222,6 +235,21 @@ class Registry:
 
         raise RegistryError(
             'No RasterSourceDefaultProvider found for {}'.format(s))
+
+    def get_vector_source_default_provider(self, s):
+        """
+        Gets the VectorSourceDefaultProvider for a given input string.
+        """
+        self._ensure_plugins_loaded()
+        providers = (self._plugin_registry.default_vector_sources +
+                     self._internal_default_vector_sources)
+
+        for provider in providers:
+            if provider.handles(s):
+                return provider
+
+        raise RegistryError(
+            'No VectorSourceDefaultProvider found for {}'.format(s))
 
     def get_label_source_default_provider(self, task_type, s):
         """
